@@ -1,6 +1,96 @@
-.Rproj.user
+# History files
 .Rhistory
+.Rapp.history
+
+# Session Data files
 .RData
+.RDataTmp
+
+# User-specific files
+.Ruserdata
+3_model_refinement/tune-model/nn_tune.rda
+3_model_refinement/tune-model/ensemble_autoplot.rda
+3_model_refinement/tune-model/patient_model_st.rda
+
+# RStudio files
+.Rproj.user/
+*.Rproj
+
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth
-.DS_Store
-.quarto
+
+# knitr and R markdown default cache directories
+*_cache/
+/cache/
+
+# Temporary files created by R markdown
+*.utf8.md
+*.knit.md
+
+# R Environment Variables
+.Renviron
+
+# mac related files
+*.DS_Store
+**/.DS_Store
+
+# ignore files (likely datasets) if too large (> 100 MB)
+# specify pathway to dataset data/project_dataset.csv
+# if all datasets are too large then use data/*.csv (only ignores CSVs)
+# if you have other file types then use appropriate extension data/*.rds
+# Terminal code to find files that are too large
+# find . -size +100M | sed 's|^\./||g' | cat >> .gitignore; awk '!NF || !seen[$0]++' .gitignore
+.RDataTmp
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+2_model_tuning/tune_model/nn_tune.rda
+.RDataTmp
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785
+3_model_refinement/tune_model/nn_tune.rda
+2_model_tuning/tune_model/nn_tune.rda
+.RDataTmp
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785
+3_model_refinement/tune_model/nn_tune.rda
+.RDataTmp
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785
+3_model_refinement/tune_model/nn_tune.rda
+.RDataTmp
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785
+3_model_refinement/tune_model/nn_tune.rda
+.RDataTmp
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785
+.RDataTmp
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785
+.RDataTmp
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785
+2_model_tuning/tune-model/nn_tune.rda
+.RDataTmp
+.git/objects/a2/67da7723732658b4bc23601d81ed6adedaa064
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785
+3_model_refinement/tune-model/nn_tune.rda
+2_model_tuning/tune-model/nn_tune.rda
+.RDataTmp
+.git/objects/a2/67da7723732658b4bc23601d81ed6adedaa064
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785
+3_model_refinement/tune-model/nn_tune.rda
+2_model_tuning/tune-model/nn_tune.rda
+.RDataTmp
+.git/objects/a2/67da7723732658b4bc23601d81ed6adedaa064
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785
+3_model_refinement/tune-model/nn_tune.rda
+2_model_tuning/tune-model/nn_tune.rda
+1_model_building/tune-model/ensemble_tune/en_tune.rda
+1_model_building/tune-model/ensemble_tune/ensemble_fit.rda
+.RDataTmp
+.git/objects/a2/67da7723732658b4bc23601d81ed6adedaa064
+.git/objects/pack/pack-7cb1d20cd493dce83f401d2b1f1036cb61f5616d.pack
+.git/objects/cb/20281689b47c04a09492a388636e8c25b08785

@@ -1,0 +1,143 @@
+---
+title: "Executive Summary"
+subtitle: |
+  | Executive Summary
+  | Data Science 3 with R (STAT 301-3)
+author:
+  - name: Katya Chadha
+  - name: Chau Tran
+  - name: Hyouji Joo 
+  
+date: today
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    embed-resources: true
+    code-fold: false
+    link-external-newwindow: true
+
+bibliography: "https://api.citedrive.com/bib/f3f364ed-c88c-40e9-aa1b-635600b50cf4/references.bib?x=eyJpZCI6ICJmM2YzNjRlZC1jODhjLTQwZTktYWExYi02MzU2MDBiNTBjZjQiLCAidXNlciI6ICIxNjUwMiIsICJzaWduYXR1cmUiOiAiMmVhZGZjMzUxNGE2YTZhZjY0YWJiNzQ3YjhmZWJhOGM1NjhkOTBmN2EyZjM2ZjhjMjljN2Y1MjZmMzc3NmRhMiJ9"
+csl: 'https://raw.githubusercontent.com/citation-style-language/styles/master/apa-annotated-bibliography.csl'
+
+
+execute:
+  warning: false
+  echo: false
+
+from: markdown+emoji
+reference-location: margin
+---
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[Final Project's Github Repo](https://github.com/stat301-3-2025-spring/final-project-3-women-in-stem)
+
+:::
+
+
+## Background
+
+In-hospital mortality remains a significant concern in intensive care units across the United States, where nearly 1 in 10 critically ill patients do not survive their hospital stay [@Hook]. Despite advances in care and continuous monitoring, early signs of deterioration often go unnoticed. This project addresses that gap by developing a **supervised classification model** to predict in-hospital death using patient data available at admission, including vital signs, lab values, comorbidities, and demographic factors.
+
+![Distribution of Outcome Variable (Hospital Deaths)](data-check/death_count_plot.png){#fig-plot-death-plot}
+
+The model is trained on the [Patient Survival Dataset](https://www.kaggle.com/datasets/mitishaagarwal/patient/dat) from Kaggle, which contains over 90,000 patient records. A critical challenge identified early in the project was the **severe class imbalance** in the outcome variable: approximately 84,000 survived versus only 8,000 deaths according to @fig-plot-death-plot. To address this, **downsampling** was applied to balance the training data and mitigate model bias. Additionally, one variable with complete missingness was removed, while the remaining features with moderate missingness were retained and handled using imputation techniques in the preprocessing pipeline. These steps ensure the dataset is clean, balanced, and suitable for building a robust and generalizable predictive model.
+
+
+## Method Overview
+
+#### 1. Model Development and Selection
+
+A total of **12 classification models** were developed, encompassing both benchmark and advanced machine learning approaches. These included a **null model** (majority class prediction), a **naive Bayes baseline**, and nine individual classifiers: **logistic regression**, **elastic net**, **boosted trees**, **random forest**, **K-nearest neighbors (KNN)**, **MARS**, **neural network**, and two support vector machines (SVM) with **radial** and **polynomial kernels**. Additionally, an **ensemble model** was constructed by combining the elastic net and MARS models to leverage both regularization and interaction-driven modeling strategies.
+
+Model development followed a **consistent data splitting protocol**, using an **80/20 stratified train-test split** to maintain class proportions, along with **5-fold cross-validation repeated 3 times** on the training data. This robust resampling framework minimized variance from random splits and ensured reliable evaluation across models. Performance was assessed using **ROC-AUC**, a threshold-independent metric well-suited for imbalanced classification problems like hospital mortality prediction.
+
+Among the non-benchmark models, the **boosted tree**, **random forest**, and **neural network** consistently achieved the strongest ROC-AUC scores, positioning them as key candidates for further tuning and refinement in the later stages of the workflow.
+
+
+#### 2. Hyperparameter Tuning Strategy
+
+The tuning phase focused on the **boosted tree**, **random forest**, and **neural network** models. These models outperformed both the null and naive Bayes baselines, showing strong classification ability.
+
+Key tuning goals included:
+
+- **Refining hyperparameter grids** to focus around previously optimal values.
+- **Improving preprocessing pipelines**, including testing interaction terms between `age` and numeric variables.
+- **Maintaining consistency** through the same 80/20 train-test split and 5-fold cross-validation (with 3 repeats).
+
+While interaction terms were initially explored, they were excluded in the final tuned models due to negligible gains in performance.
+
+
+#### 3. Model Refinement and Preprocessing Enhancements
+
+The refinement stage retained the **same data splitting and tuning structure** but introduced more **sophisticated imputation methods** to strengthen data preprocessing:
+
+- **Bagged Tree Imputation** (`step_impute_bag`) was applied to **numeric predictors**, using `age` and `bmi` as anchors. This approach improves the accuracy of missing value estimation by leveraging ensemble trees. BMI was included due to its well-documented correlation with health outcomes [@A_Zhang_2023].
+
+- **K-Nearest Neighbors (KNN) Imputation** (`step_impute_knn`) was used for **categorical predictors**, allowing the imputation process to respect local feature structures and improve category plausibility.
+
+The final recipes preserved consistency with previous steps, including variable filtering, one-hot encoding for tree models, normalization, and low-variance feature removal. Interaction terms were omitted based on prior analysis showing limited benefit.
+
+
+## Final Model Selection
+
+
+In the initial model comparison phase, the **boosted tree model** emerged as the strongest performer among all 11 classification algorithms evaluated (@tbl-roc-auc). It recorded the **highest ROC-AUC of 0.89472**, demonstrating excellent ability to distinguish between hospital survival and death outcomes. This outperformed other models such as **random forest** (0.88594), **elastic net** (0.86964), **logistic regression** (0.86924), and **neural networks** (0.87052). Importantly, it also had the **lowest standard error** (0.00161), indicating consistent performance across cross-validation folds.
+
+What further elevated the boosted tree model was its **efficiency**—training required only **31 minutes**, far faster than more computationally expensive models like **radial SVM** (2,580 minutes) and **polynomial SVM** (248 minutes), both of which underperformed in ROC-AUC. This combination of high performance, low variability, and fast runtime made it a **rare optimal trade-off** between model complexity and practical feasibility.
+
+![ROC-AUC, standard error, and runtime for all models across building, tuning, and refinement stages.](4_final_evaluation/tbl_compile_reformat.png){#tbl-roc-auc}
+
+
+The model's dominance persisted even after entering the **model tuning** and **model refinement** phases. During tuning, advanced preprocessing such as interaction terms and optimized hyperparameters were applied. However, instead of yielding improvement, the ROC-AUC slightly **decreased to 0.89143**. Further refinement with imputation strategies similarly failed to enhance performance, yielding **0.89277**, which still **did not surpass the original 0.89472** (@tbl-roc-auc).
+
+This pattern strongly suggests that the **initial boosted tree model was already near-optimal**, and that additional complexity—whether through preprocessing, hyperparameter manipulation, or imputation—introduced **diminishing returns**. In contrast, some other models, such as random forest and neural network, experienced more notable fluctuations under tuning, with neural network performance dropping substantially.
+
+Taken together, these results reinforce the boosted tree's **robustness, stability, and practical advantage**. Despite rigorous attempts to improve upon it, the original version remained the top model. It was therefore selected as the **final model for deployment**, offering the best combination of predictive accuracy, runtime efficiency, and resilience to overfitting.^[For details on ensemble model performance, see [Appendix Section 3](file:///Users/bongbanana/Desktop/Stat%20301-3/final-project-3-women-in-stem/women_in_stem_final_report.html#ensemble-model)]
+
+
+## Final Fitting Evaluation 
+
+The final boosted tree model underwent rigorous evaluation on the held-out test set to assess its generalization performance. As shown in @tbl-metrics-final, the model achieved a **ROC-AUC of 0.89900** and an **accuracy of 0.82902**. The ROC-AUC, which measures the model’s ability to discriminate between patient survival and death across thresholds, confirms the boosted tree’s high predictive power. Although ROC-AUC is the primary metric due to the imbalanced nature of the data, accuracy was included to provide an intuitive interpretation of the model’s overall correctness. An accuracy of approximately 83% means that the model correctly classified more than four out of five patients, which offers a compelling and accessible measure for stakeholders.
+
+
+```{r}
+#| label: tbl-metrics-final
+#| echo: false
+#| tbl-cap: "Performance metrics of the final boosted tree model on the test set"
+
+load(here::here("4_final_evaluation/patient_final_metrics.rda"))
+
+knitr::kable(patient_final_metrics, digits = 5)
+```
+
+The model’s classification behavior is further illustrated in @fig-final-conf-mat, which shows it correctly identified **2,848 survivors** and **1,089 deaths**. While 494 deaths were incorrectly predicted as survival cases (false negatives), and 318 survivors were misclassified as deaths (false positives), the true positive and true negative counts demonstrate a solid balance. This reinforces the model’s capability to recover meaningful patterns for both minority (death) and majority (survival) outcomes.
+
+![Confusion matrix showing test set predictions by the final boosted tree model, visualizing the classification results of the final model.](4_final_evaluation/patient_conf_mat.png){#fig-final-conf-mat}
+
+Importantly, these testing results align closely with performance observed during cross-validation. As recorded in @tbl-roc-auc, the original boosted tree model achieved a **cross-validated ROC-AUC of 0.89472**, with a **standard error of just 0.00161** and a relatively low **runtime of 31 minutes**. Even after multiple rounds of preprocessing enhancement and hyperparameter refinement, the model’s ROC-AUC plateaued around 0.89277—only a marginal improvement over the initial specification. However, these refinements increased runtime significantly, with the final version taking **556 minutes** to train. This suggests that while additional complexity may enhance interpretability or pipeline structure, it does not yield meaningful gains in performance for this particular model.
+
+
+## Conclusion
+
+The final boosted tree model demonstrates an ideal balance of **high ROC-AUC (0.89900)**, **solid accuracy (0.82902)**, **efficient runtime**, and **strong generalization**, making it the top choice for deployment in patient survival prediction (@tbl-metrics-final). Notably, the **initial model building phase** already achieved exceptional performance (ROC-AUC = 0.89472) and low variance (SE = 0.00161), outperforming later tuning and refinement stages, which added substantial runtime (up to 556 minutes) without any meaningful improvement in performance (@tbl-roc-auc). This suggests that a thoughtfully constructed base model can outperform overly complex optimization efforts, particularly when diminishing returns set in.
+
+For future work, constructing **ensemble models** that combine boosted trees with complementary learners (e.g., elastic net or random forest) may enhance predictive robustness by capturing diverse feature interactions and regularization effects. Additionally, **narrowing hyperparameter grids**—especially for computationally intensive models like random forest—may lead to more targeted tuning and reduce runtime overhead without sacrificing performance. These strategies offer practical, efficient paths for further refinement in predictive modeling.
+
+## References
+::: {#refs}
+:::
+
+
+## Use of Generative AI
+
+We used ChatGPT to improve sentence flow, check grammar, and make my writing more concise. 
+
+
+
