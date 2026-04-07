@@ -37,7 +37,7 @@ reference-location: margin
 
 ## Github Repo Link
 
-[Final Project's Github Repo](https://github.com/stat301-3-2025-spring/final-project-3-women-in-stem)
+[Final Project's Github Repo](https://github.com/bunmam-ctrl/stat301-winter-final.git)
 
 :::
 
