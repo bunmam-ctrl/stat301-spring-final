@@ -32,7 +32,7 @@ citation-location: margin
 
 ## Github Repo Link
 
-[Final Project's Github Repo](https://github.com/bunmam-ctrl/stat301-winter-final.git)
+[Final Project's Github Repo](https://github.com/bunmam-ctrl/stat301-spring-final.git)
 
 :::
 
