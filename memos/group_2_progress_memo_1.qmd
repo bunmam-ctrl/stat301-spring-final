@@ -1,0 +1,186 @@
+---
+title: "Progress Memo 1"
+subtitle: |
+  | Final Project 
+  | Data Science 3 with R (STAT 301-3)
+author:
+  - name: Katya Chadha
+  - name: Chau Tran
+  - name: Hyouji Joo 
+  
+date: today
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    embed-resources: true
+    code-fold: false
+    link-external-newwindow: true
+
+execute:
+  warning: false
+
+from: markdown+emoji
+reference-location: margin
+citation-location: margin 
+---
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[Final Project's Github Repo](https://github.com/bunmam-ctrl/stat301-winter-final.git)
+
+:::
+
+## Prediction Problem 
+
+In the United States, nearly one in ten hospitalized patients who require intensive care will not survive their hospital stay, according to data from the Society of Critical Care Medicine. ^[[Critical Care Statistics](https://sccm.org/communications/critical-care-statistics?utm_source=chatgpt.com)]. Despite continuous monitoring and advanced treatment options, subtle signs of patient decline often go undetected until it is too late. Early identification of patients at high risk of death remains a critical, unmet need in modern healthcare.
+
+This project aims to develop a **classification-based supervised learning model** to predict in-hospital mortality—whether a patient will **survive or die**—based on data available during admission. By analyzing vital signs, laboratory measurements, comorbidities, and other clinical indicators, the model seeks to uncover patterns associated with mortality risk. A robust predictive system can support clinicians in prioritizing care, improving intervention timing, and ultimately saving lives by preventing avoidable deaths.
+
+## Data source
+
+The [Patient Survival Dataset](https://www.kaggle.com/datasets/mitishaagarwal/patient/dat) from Kaggle provides the foundation for developing a predictive model aimed at estimating in-hospital mortality for admitted patients. This dataset offers a rich set of clinical features, vital signs, laboratory results, and patient demographics, enabling comprehensive analysis of survival outcomes in a hospital setting.
+
+### Target Variable
+- **In-Hospital Mortality**: A binary outcome variable indicating whether the patient `survived` (0) or `died` (1) during their hospital admission.
+
+### Predictor Variables
+
+The dataset contains a wide range of predictors that capture important clinical and physiological characteristics:
+
+#### **1. Patient Demographics**
+
+- Age
+- Gender
+- Ethnicity
+
+#### **2. Vital Signs and Laboratory Measurements**
+
+- Blood pressure (systolic, diastolic, mean arterial pressure)
+- Heart rate
+- Respiratory rate
+- Temperature
+- Blood glucose (minimum and maximum)
+- Oxygen saturation (SpO2)
+- Body Mass Index (BMI)
+- Potassium levels (minimum and maximum)
+
+#### **3. Organ System and Disease Severity Scores**
+
+- Glasgow Coma Scale (GCS) components: verbal, motor, and eye responses
+- APACHE II and APACHE IVa scores
+- APS III score
+- Acute Physiology Score (APS)
+
+#### **4. Admission Information**
+
+- Type of ICU admission (elective vs emergency)
+- Admission diagnosis (solid tumors, lymphoma, leukemia, immunosuppression, cirrhosis, diabetes, AIDS, etc.)
+- ICU discharge status
+- Ventilator use
+- Presence of chronic conditions
+
+### Application of the Model
+
+By utilizing classification-based supervised learning, this model aims to predict the probability of **in-hospital mortality** based on patient characteristics recorded at admission and during ICU stays. Accurately identifying high-risk patients at the point of care enables hospitals to:
+
+- Implement early interventions to prevent deterioration.
+- Prioritize resources for the most vulnerable individuals.
+- Improve ICU and hospital-wide care management strategies.
+- Enhance survival rates through targeted clinical decision support.
+
+Additionally, understanding the key predictors of mortality can inform clinicians, hospital administrators, and public health policymakers, ultimately driving improvements in hospital quality of care and patient outcomes.
+
+
+## Data Quality Check
+
+A thorough quality check of the [Patient Survival dataset](https://www.kaggle.com/datasets/mitishaagarwal/patient/data) was performed to ensure that the data is suitable for predictive modeling. As summarized in @tbl-summary-patient, the dataset contains **91,713 observations** and **85 variables**, including *77 numerical variables* and *7 categorical variables*. Overall, the dataset shows a **4% missing value rate**, with a total of **288,046 missing entries** across all variables. While 4% overall missingness is relatively low, closer inspection reveals important nuances regarding the structure of missing data.
+
+
+```{r, echo = FALSE}
+#| label: tbl-summary-patient
+#| tbl-cap: "Summary Statistics of the Patient Survival Data."
+
+load(here::here("data-check/patient_summary.rda"))
+knitr::kable(patient_summary)
+```
+
+As shown in @fig-plot-missingness, there is one variable that exhibits **complete missingness** (`...84`), meaning it contains no observed values across any records in the dataset. Since this variable provides no usable information, it can be safely **removed** without affecting the predictive quality of the model. 
+
+
+![Overview of Missing Values in the Patient Survival Dataset](../data-check/na_overview.png){#fig-plot-missingness}
+
+Furthermore, given that there are more than **16 predictor variables**, careful evaluation of missingness patterns is essential. Certain variables display **substantial levels of missingness**, even though the majority have relatively low missing rates. Variables with relatively high proportions of missing data could introduce **noise**, **bias**, or **inefficiencies** into the model if left unaddressed. Therefore, variables with a missingness rate exceeding a practical threshold such as **20%** should be considered either for **removal** or for **targeted advanced imputation strategies**, depending on their potential importance to the prediction task. 
+
+By systematically removing or appropriately imputing highly incomplete variables, the modeling process maintains greater **integrity**, **robustness**, and **predictive reliability**. This proactive handling of missingness is critical to minimizing the risk of misleading or unstable model outcomes.
+
+## Evaluation of Target Variable 
+
+Before proceeding, we took time to evaluate our target variable `hospital_deaths`, which is a binary variable indicating `1` for a death that occurred and a `0` for alive patients. As seen in @tbl-survival-ratio, the ratio between the two categories within the variable was 7919:83798, indicating that the minority data (deaths) makes up about 10% of the majority. 
+
+```{r}
+#| label: tbl-survival-ratio
+#| tbl-cap: "Ratio of Outcome Variable (Hospital Deaths)"
+#| echo: false 
+
+load(here::here("data-check/survival_ratio.rda"))
+  knitr::kable(survival_ratio, digits = 3 )
+```
+
+
+![Distribution of Outcome Variable (Hospital Deaths)](../data-check/death_count_plot.png){#fig-plot-death-plot}
+
+The presented ratio reflected that since the number of hospital deaths is over 5000 but is significantly lower than the number of patients who survived, it would be appropriate to perform a downsample on the majority. 
+
+In addition, we observed the difference in death count for different patient demographics: age, gender, ethnicity.
+
+### Age
+
+We can see from @tbl-survival-by-age, the age range with the most death occurrences is [60, 80]. From this table, aspects of the data to take into consideration is the significant difference between the number of data points collected for different age groups as well as the potential need to incorporate interaction steps between age and other predictor variables for hospital deaths in later recipe making. 
+
+```{r}
+#| label: tbl-survival-by-age
+#| tbl-cap: "Intercation between age and hospital deaths"
+#| echo: false 
+
+load(here::here("data-check/survival_by_age.rda"))
+knitr::kable(survival_by_age, digits = 3)
+```
+
+### Gender 
+
+Because there were more recorded data points for males v. females, I compared the difference in death count using the percentage deaths from total number of observations for each gender. From @tbl-survival-by-gender it is determined that females have higher death percentages of 8.84% compared to the male counterparts with a percentage of 8.44%. 
+
+```{r}
+#| label: tbl-survival-by-gender 
+#| tbl-cap: "Interaction between gender and hospital deaths"
+#| echo: false 
+
+load(here::here("data-check/survival_by_gender.rda"))
+knitr::kable(survival_by_gender, digits = 3)
+```
+
+
+### Ethnicity 
+
+```{r}
+#| label: tbl-survival-ethnicity 
+#| tbl-cap: "Interaction between ethnicity and hospital deaths"
+#| echo: false 
+
+load(here::here("data-check/survival_ethnicity.rda"))
+knitr::kable(survival_ethnicity, digits = 3)
+```
+
+The ethnicity variable in relation to the target variable shows us that there's a significant difference between the number of collected data for the caucasian ethnicity compared to the others. As seen in @tbl-survival-ethnicity, there are only a total of 788 recorded Native American individuals compared to the 70,684 Caucasians. We believe that this is something to take note of while building our prediction model due to the presence of underrepresented ethnicities. 
+
+Due to this issue, we calculated the percentage deaths similar to @tbl-survival-by-gender. 
+
+## Misc
+
+Looking towards our next steps, the evaluation of missingness and our outcome variable give some insight into how we will proceed. Since our dataset is quite large, we plan to utilize downsampling techniques to both reduce the overall size of the dataset and improve the ratio between the two categories within our outcome variable. There also appears to be some correlation between predictors such as age and our outcome variable. This lends itself to the development of interactions between age and other predictors in the recipe-building stage. We will also likely use feature engineering techniques we have learned to reduce the number of predictors being utilized in our recipe. This will aid with computation time in the model tuning and fitting process.

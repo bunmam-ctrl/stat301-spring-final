@@ -1,0 +1,120 @@
+---
+title: "Progress Memo 2"
+subtitle: |
+  | Final Project 
+  | Data Science 3 with R (STAT 301-3)
+author:
+  - name: Katya Chadha
+  - name: Chau Tran
+  - name: Hyouji Joo 
+  
+date: today
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    embed-resources: true
+    code-fold: false
+    link-external-newwindow: true
+
+execute:
+  warning: false
+
+from: markdown+emoji
+reference-location: margin
+citation-location: margin 
+---
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[Final Project's Github Repo](https://github.com/bunmam-ctrl/stat301-winter-final.git)
+
+:::
+
+## Prediction Problem
+This project aims to develop a **classification-based supervised learning model** to predict in-hospital mortality—whether a patient will **survive or die**—based on data available during admission. By analyzing vital signs, laboratory measurements, comorbidities, and other clinical indicators, the model seeks to uncover patterns associated with mortality risk. A robust predictive system can support clinicians in prioritizing care, improving intervention timing, and ultimately saving lives by preventing avoidable deaths.
+
+## Analysis Plan
+This project involves using a multi-step process to identify the best predictive model for in-hospital mortality. There are two main phases: model building and model tuning. In our first phase, we have done some data cleaning as well as downsampling as there was a large class imbalance in our target variable. We also performed an 80/20 split for the training and testing data, and folded our training data using cross-validation with 5 folds and 3 repeats. These steps were taken to help prevent overfitting later on. For the initial models in the model building step, 2 simple recipes were developed.
+
+The first recipe was used on all models with the exception of the random forest model. This recipe removed indicator variables, did simple imputation for numeric and categorical variables, and dummy coded all categorical variables. 
+
+The second recipe was a random forest recipe, which had the same steps as the aforementioned recipe, with the addition of one-hot encoding on the dummy step. While these recipes were relatively simple, we plan to add additional feature engineering in our model tuning phase.
+
+The models run in the model building phase were as follow: null, logistic regression, boosted tree, elastic net, k-nearest neighbors, mars, naive bates, neural network, random forest, and support vector machine (radial and poly types).
+
+For our model tuning phase, we plan to choose the top three performing models from the model building phase. These three models will be chosen according to which have the highest `roc_auc` values. We will then look into additional feature engineering and tuning that can be performed on these three models. These three models will be assessed utilizing `roc_auc`, and the top performing model will be chosen as the final model and trained and assessed on the test data.
+
+## Initial Model Results
+
+Based on @tbl-roc-auc, the **boosted tree** model emerged as the top-performing algorithm for predicting in-hospital mortality. It achieved the highest ROC-AUC of **0.89472** with the lowest standard error of **0.00161**, indicating both strong predictive accuracy and consistency. Although its runtime was moderately high at 31 minutes, this trade-off is justified by its superior performance. Boosted trees excel at capturing complex interactions and reducing bias, making them well-suited for medical applications where subtle patterns in patient data can be critical. The corresponding hyperparameters — **1,000 trees**, `mtry = 10`, `min_n = 2`, and a **learning rate of 0.0224**—are detailed in @tbl-bt-param.
+
+
+```{r}
+#| label: tbl-roc-auc
+#| echo: false
+#| tbl-cap: "ROC-AUC Performance of Tuned Classification Models"
+
+load(here::here("1_model_building/results/tune_roc_tbl.rda"))
+knitr::kable(tune_roc_tbl, digits = 5)
+```
+
+The **random forest** model also performed well, with an ROC AUC of **0.88594** and a standard error of **0.00172**, making it the second-best performing model in @tbl-roc-auc. It required a slightly shorter runtime of 30 minutes. As a robust ensemble learning method, random forest handles multicollinearity and nonlinearity effectively, making it a dependable model when working with diverse clinical variables.
+
+```{r}
+#| label: tbl-rf-param
+#| echo: false
+#| tbl-cap: "Optimal Hyperparameters for the Best Random Forest Model"
+
+load(here::here("1_model_building/results/rf_param.rda"))
+knitr::kable(rf_param)
+```
+
+```{r}
+#| label: tbl-bt-param
+#| echo: false
+#| tbl-cap: "Optimal Hyperparameters for the Best Boosted Tree Model"
+
+load(here::here("1_model_building/results/bt_param.rda"))
+knitr::kable(bt_param)
+```
+
+The **random forest** model followed closely behind, with an ROC AUC of **0.88594** and a standard error of **0.00172**, taking 30 minutes to train. This model also used **1,000 trees**, `mtry = 10`, and `min_n = 2` as its optimal settings (@tbl-rf-param). As a robust ensemble method, random forest is effective in managing multicollinearity and nonlinear relationships, offering dependable performance in high-dimensional clinical datasets.
+
+
+```{r}
+#| label: tbl-nn-param
+#| echo: false
+#| tbl-cap: "Optimal Hyperparameters for the Best Neural Network Model"
+
+load(here::here("1_model_building/results/nn_param.rda"))
+knitr::kable(nn_param)
+```
+
+In third place was the **neural network** model, which delivered an ROC AUC of **0.87052** and a standard error of **0.00176**, with a shorter runtime of 24 minutes. Despite slightly lower predictive performance, its strengths lie in modeling complex, nonlinear interactions between variables. The final neural network configuration included `hidden_units = 7` and `penalty = 1`, as presented in @tbl-nn-param.
+
+
+
+## Summary of Progress and Next Steps
+
+To summarize the progress made for progress memo 2, our group was successful in producing results and recording the time taken to run the models for all model specifications with the exception of the SVM polynomial model This ultimately concludes our model building, the first part of the final project. Before the third progress memo, we'll have completed results for all of the model specifications, and would have properly evaluated the produced results.
+
+For our next steps, we plan to begin the second phase of the project which is model tuning/refining. The first step in beginning the phase is to compare all our model results to select three models with the ideal balance between `roc_auc` value, complexity, and run time; rather than simply selecting based on the highest `roc_auc` value, we'll carefully interpret the result in a manner that takes into consideration the model complexity and the associated run time. For instance, a higher `roc_auc` value on a logistic regression model compared to a lower value for a random forest model indicates potential benefits in model simplicity and interpretability. At the same time, these results could also indicate that more complex models do better at recognizing more subtle patterns or nonlinear relationships in the data that simpler models may fail to indicate. 
+
+These three models will then be utilized to develop an ensemble model, and a new complex recipe will be created in relation to this ensemble model. After training and producing results from the ensemble model, we'll analyze our results and see if the ensemble model `roc_auc` value is the best performing model out of the models that are selected from the model stack for the final stack. 
+
+After the creation of our model ensemble, we'll further narrow down our focus on our final model after the analysis and comparison of the results from the ensemble model and other members of the final model stack. From here, we'll plan accordingly for the final recipe as well as the final model specifications based on the model we choose as the best performing. The evaluation of the final model performance will be based on its `roc_auc` value and run time, but we're considering the application of other evaluative methods such as a heat map to properly conclude the effectiveness of our classification-based supervised learning model in responding to this particular prediction problem. 
+
+
+
+
+
+
+
+
+
